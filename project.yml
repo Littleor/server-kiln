@@ -42,6 +42,13 @@ targets:
         product: ServerKilnUI
     entitlements:
       path: Config/ServerKiln.entitlements
+      properties:
+        com.apple.developer.aps-environment: development
+        com.apple.developer.icloud-container-identifiers: [iCloud.cn.littleor.serverkiln]
+        com.apple.developer.icloud-services: [CloudKit]
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)cn.littleor.serverkiln.shared
+          - $(AppIdentifierPrefix)cn.littleor.serverkiln.terminal
     info:
       path: Config/Info.plist
       properties:

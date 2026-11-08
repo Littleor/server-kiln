@@ -22,11 +22,13 @@ class PublicBoundaryTests(unittest.TestCase):
                      'docs/security-and-privacy.md', 'Resources/Licenses/swift-nio-LICENSE.txt']:
             self.assertFalse(boundary.private_path(path))
 
-    def test_deleted_private_file_is_still_rejected_from_history(self):
+    def test_renamed_private_file_is_still_rejected_from_history(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'scripts').mkdir()
             (root / 'scripts/check-public-tree.py').write_bytes(script.read_bytes())
+            (root / '.github/workflows').mkdir(parents=True)
+            (root / '.github/workflows/ci.yml').write_text('name: CI')
             def git(*args):
                 subprocess.run(['git', *args], cwd=root, check=True, capture_output=True)
             git('init', '-q')
@@ -37,8 +39,8 @@ class PublicBoundaryTests(unittest.TestCase):
             private.write_text('Private planning fixture')
             git('add', '.')
             git('commit', '-qm', 'test: add fixture')
-            private.unlink()
-            git('add', '-u')
+            private.rename(root / 'docs/public.md')
+            git('add', '.')
             git('commit', '-qm', 'test: remove fixture')
             result = subprocess.run(['python3', 'scripts/check-public-tree.py', '--history'],
                                     cwd=root, text=True, capture_output=True)

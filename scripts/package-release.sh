@@ -8,7 +8,6 @@ if [ -n "${ASC_ENV:-}" ]; then source "$ASC_ENV"; fi
 : "${ASC_AUTH_KEY_ID:?Set ASC_AUTH_KEY_ID}"
 : "${ASC_AUTH_KEY_ISSUER_ID:?Set ASC_AUTH_KEY_ISSUER_ID}"
 VERSION="$(cat VERSION)"
-BUILD="$(cat BUILD_NUMBER)"
 APP="${1:?Usage: scripts/package-release.sh /absolute/path/ServerKiln.app /absolute/output/path}"
 OUT="${2:?Specify the output directory}"
 case "$APP:$OUT" in /*:/*) ;; *) echo 'Use absolute paths.' >&2; exit 2 ;; esac
@@ -19,8 +18,7 @@ ZIP="ServerKiln-$VERSION-universal.zip"
 for file in "$DMG" "$ZIP" SHA256SUMS; do
   [ ! -e "$OUT/$file" ] || { echo "Refusing to replace $OUT/$file" >&2; exit 1; }
 done
-test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP/Contents/Info.plist")" = "$VERSION"
-test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$APP/Contents/Info.plist")" = "$BUILD"
+python3 scripts/check-release-app.py "$APP"
 codesign --verify --deep --strict "$APP"
 lipo "$APP/Contents/MacOS/ServerKiln" -verify_arch arm64 x86_64
 xcrun stapler validate "$APP"

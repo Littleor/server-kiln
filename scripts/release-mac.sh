@@ -47,6 +47,7 @@ PY
 xcodebuild -exportArchive -archivePath "$OUT/ServerKiln.xcarchive" -exportPath "$OUT/export" \
   -exportOptionsPlist "$OUT/ExportOptions.plist" "${AUTH[@]}"
 APP="$OUT/export/ServerKiln.app"
+python3 scripts/check-release-app.py "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 lipo "$APP/Contents/MacOS/ServerKiln" -verify_arch arm64 x86_64
 # Staple the app as well as the DMG so the ZIP also works offline.

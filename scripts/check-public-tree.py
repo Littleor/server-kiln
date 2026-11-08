@@ -37,12 +37,9 @@ def main():
     names = set(filter(None, git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0')))
     # Checking the complete history also catches files deleted from the current tree.
     if '--history' in sys.argv:
-        for line in git('rev-list', '--objects', '--all').splitlines():
-            if ' ' in line:
-                name = line.split(' ', 1)[1]
-                # Tree entries (directory names) have no file extension.
-                if '/' in name or '.' in PurePosixPath(name).name:
-                    names.add(name)
+        # Changed paths retain every name even when identical blobs were renamed.
+        history = git('log', '--all', '--format=', '--name-only', '--no-renames', '-z')
+        names.update(filter(None, history.split('\0')))
     failures = []
     secret = re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|'
                         r'\bgh[pousr]_[A-Za-z0-9]{30,}|\bgithub_pat_[A-Za-z0-9_]{40,}|'

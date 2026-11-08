@@ -42,7 +42,8 @@ scripts/release-mac.sh
 ```
 
 The script builds both architectures, exports with production iCloud entitlements,
-notarizes and staples the app, then signs/notarizes/staples a DMG. The ZIP contains
+checks production CloudKit, push and keychain entitlements, notarizes and staples
+the app, then signs/notarizes/staples a DMG. The ZIP contains
 the stapled app too. It verifies signatures and Gatekeeper assessment and writes:
 
 ```text
