@@ -1,0 +1,31 @@
+.DS_Store
+.build/
+.swiftpm/
+build/
+dist/
+DerivedData/
+*.xcodeproj/
+Config/Info.plist
+__pycache__/
+.venv/
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+
+# Private companion sources and authoring material never belong in this repo.
+[iI][oO][sS]/
+**/[pP][rR][dD]*
+**/[pP]rompt*/
+**/[pP]rompt*.md
+**/[aA][gG][eE][nN][tT]*.md
+.claude/
+.codex/
+.cursor/

@@ -1,0 +1,64 @@
+name: ServerKiln
+options:
+  deploymentTarget:
+    macOS: "14.0"
+  developmentLanguage: zh-Hans
+  knownRegions: [zh-Hans, en, Base]
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "1.0.2"
+    CURRENT_PROJECT_VERSION: "6"
+    CODE_SIGN_STYLE: Automatic
+packages:
+  ServerKiln:
+    path: .
+targets:
+  ServerKiln-macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/ServerKiln
+      - path: Resources
+        excludes: [Licenses]
+      - path: build/mac-icon/AppIcon.icns
+        optional: true
+        buildPhase: resources
+      - path: LICENSE
+        buildPhase: resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
+      - path: Resources/Licenses
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: ServerKiln
+        product: ServerKilnCore
+      - package: ServerKiln
+        product: ServerKilnSSH
+      - package: ServerKiln
+        product: ServerKilnSync
+      - package: ServerKiln
+        product: ServerKilnUI
+    entitlements:
+      path: Config/ServerKiln.entitlements
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleDisplayName: ServerKiln
+        CFBundleName: ServerKiln
+        CFBundleIconFile: AppIcon
+        CFBundleDevelopmentRegion: zh-Hans
+        AppIdentifierPrefix: $(AppIdentifierPrefix)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: "14.0"
+        LSUIElement: true
+        NSHighResolutionCapable: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cn.littleor.serverkiln
+        PRODUCT_NAME: ServerKiln
+        ENABLE_HARDENED_RUNTIME: YES
+        ARCHS: arm64 x86_64
+        ONLY_ACTIVE_ARCH: NO

@@ -1,0 +1,11 @@
+[extend]
+useDefault = true
+
+# This exact Swift type annotation is not a stored credential. Keep the
+# exemption limited to the one source file and the exact matched value.
+[[allowlists]]
+description = "Swift Crypto private-key type, not key material"
+condition = "AND"
+paths = ['''^Sources/ServerKilnSSH/SSHConnection\.swift$''']
+regexTarget = "secret"
+regexes = ['''^Curve25519\.Signing\.PrivateKey$''']
