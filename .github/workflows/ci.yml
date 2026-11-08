@@ -1,0 +1,42 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check public boundary and documentation
+        run: |
+          python3 scripts/check-public-tree.py --history
+          python3 scripts/check-docs.py
+          python3 -m unittest discover -s Tests/RepositoryTests
+          bash -n scripts/build-app.sh scripts/release-mac.sh scripts/package-release.sh scripts/publish-release.sh
+      - name: Scan source and history for secrets
+        run: |
+          brew install gitleaks
+          gitleaks git --redact --no-banner --log-opts=--all
+      - name: Test
+        run: swift test --force-resolved-versions
+      - name: Build universal app with both languages
+        run: scripts/build-app.sh
+      - name: Verify packaged resources
+        run: |
+          test -s dist/ServerKiln.app/Contents/Resources/en.lproj/Localizable.strings
+          test -s dist/ServerKiln.app/Contents/Resources/zh-Hans.lproj/Localizable.strings
+          codesign --verify --deep --strict dist/ServerKiln.app
+          lipo dist/ServerKiln.app/Contents/MacOS/ServerKiln -verify_arch arm64 x86_64

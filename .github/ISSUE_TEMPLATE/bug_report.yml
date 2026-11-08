@@ -1,0 +1,33 @@
+name: Bug report / 问题反馈
+description: Report a reproducible problem in the Mac app.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Please remove server addresses, usernames, SSH keys and sensitive commands from logs and screenshots. 请先脱敏日志和截图。
+  - type: input
+    id: version
+    attributes:
+      label: App version and installation source / 版本与安装来源
+      placeholder: 1.0.2, GitHub Release
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: macOS version and chip / 系统版本与芯片
+      placeholder: macOS 15.7, Apple M2
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps and expected behavior / 复现步骤与预期
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and sanitized logs / 实际表现与脱敏日志
+    validations:
+      required: true
