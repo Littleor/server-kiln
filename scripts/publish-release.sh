@@ -24,5 +24,5 @@ else
   gh release create "$TAG" --repo "$REPO" --verify-tag --draft \
     --title "ServerKiln $VERSION" --notes-file "docs/releases/$TAG.md"
 fi
-gh release upload "$TAG" --repo "$REPO" "$DMG" "$ZIP" "$OUT/SHA256SUMS"
+gh release upload "$TAG" --repo "$REPO" "$DMG" "$ZIP" "$OUT/appcast.xml" "$OUT/SHA256SUMS"
 echo "Draft ready: https://github.com/$REPO/releases"

@@ -97,3 +97,5 @@ open dist/ServerKiln.app
 
 [MIT](LICENSE)，Copyright © 2026 Littleor。第三方依赖保留各自许可，
 详见[第三方声明](THIRD_PARTY_NOTICES.md)。
+
+[Mac 应用内更新](docs/mac-updates.md): GitHub Releases / Sparkle，确认后安装。

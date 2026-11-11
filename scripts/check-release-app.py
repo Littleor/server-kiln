@@ -20,6 +20,8 @@ checks = {
     'production iCloud': entitlements.get('com.apple.developer.icloud-container-environment') == 'Production',
     'production push': entitlements.get('com.apple.developer.aps-environment') == 'production',
     'no debugger entitlement': not entitlements.get('com.apple.security.get-task-allow', False),
+    'update confirmation required': info.get('SUAllowsAutomaticUpdates') is False and info.get('SUAutomaticallyUpdate') is False,
+    'Sparkle public key': info.get('SUPublicEDKey') == '2BvzG3V/aQw5nifs1iuP+X17cMF4gdwgt9/3h8qbfuo=',
     'no app extensions': not list(app.rglob('*.appex')),
 }
 prefix = entitlements.get('com.apple.developer.team-identifier', '') + '.'

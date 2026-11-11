@@ -6,6 +6,7 @@ Dependencies retain their own licenses. Copies are included in
 
 | Component | Version | License | Source |
 | --- | --- | --- | --- |
+| Sparkle | 2.10.1 | MIT | [sparkle-project/Sparkle](https://github.com/sparkle-project/Sparkle) |
 | SwiftNIO SSH (modified) | 0.15.1 | Apache-2.0 | [apple/swift-nio-ssh](https://github.com/apple/swift-nio-ssh) |
 | SwiftNIO | 2.104.0 | Apache-2.0 | [apple/swift-nio](https://github.com/apple/swift-nio) |
 | Swift Crypto | 4.5.2 | Apache-2.0 | [apple/swift-crypto](https://github.com/apple/swift-crypto) |

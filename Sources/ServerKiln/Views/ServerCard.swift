@@ -126,7 +126,7 @@ struct ServerDetail: View {
                     taskSection(snap)
                 }
                 LastJobSection(last: monitor.jobs[server.id]?.last, history: monitor.jobs[server.id]?.finished ?? [])
-                if !snap.processes.isEmpty, !snap.isGPUServer || snap.tasks.allSatisfy({ $0.gpuIndices.isEmpty }) {
+                if !snap.processes.isEmpty {
                     ProcessSection(processes: snap.processes, memTotalKB: snap.system.memTotalKB, cores: snap.system.cpuCores)
                 }
                 VStack(alignment: .leading, spacing: 7) {

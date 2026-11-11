@@ -8,6 +8,7 @@ struct PanelView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var expanded: Set<UUID>
     @State private var showImport = false
+    @ObservedObject private var updater = MacUpdater.shared
 
     init(initiallyExpanded: Set<UUID> = []) {
         _expanded = State(initialValue: initiallyExpanded)
@@ -88,6 +89,12 @@ struct PanelView: View {
             .foregroundStyle(.secondary)
             .help("面板打开时加快刷新，关闭后恢复为设置中的间隔")
             Spacer()
+            if let version = updater.pendingVersion {
+                Button {
+                    updater.checkForUpdates()
+                } label: { Image(systemName: "arrow.down.circle.fill").foregroundStyle(.tint) }
+                    .help(String(appLocalized: "新版本 \(version) 可用"))
+            }
             Button {
                 Task { await monitor.refreshAll() }
             } label: { Image(systemName: "arrow.clockwise") }

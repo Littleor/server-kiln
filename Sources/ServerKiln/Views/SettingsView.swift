@@ -384,6 +384,7 @@ struct GeneralSettings: View {
                     AppLanguagePicker().fixedSize()
                 }
             }
+            MacUpdateSettings()
             SettingsGroup(title: String(appLocalized: "菜单栏")) {
                 SettingsRow(title: String(appLocalized: "显示布局")) {
                     PillPicker(selection: $settings.menuBarDualRow, options: [(false, String(appLocalized: "单行")), (true, String(appLocalized: "双行"))])
@@ -493,7 +494,7 @@ struct NotificationSettings: View {
 
 // MARK: - iPhone
 
-/// Mac companion setup: per-server dedicated keys for the iPhone, iCloud sync status
+/// PRD §5.9: per-server dedicated keys for the iPhone, iCloud sync status
 /// and push of busy/idle transitions.
 struct PhoneSettings: View {
     @Environment(AppSettings.self) private var settings

@@ -15,6 +15,7 @@ VERSION="$(cat VERSION)"
 BUILD="$(cat BUILD_NUMBER)"
 OUT="$ROOT/build/release/v$VERSION"
 [ ! -e "$OUT" ] || { echo "Output already exists: $OUT. Move it aside before rebuilding." >&2; exit 1; }
+scripts/check-mac-update-version.sh "$VERSION" "$BUILD"
 command -v xcodegen >/dev/null
 [ -f "$KEY" ] || { echo 'App Store Connect key not found.' >&2; exit 1; }
 scripts/check-public-tree.py
@@ -32,7 +33,7 @@ mkdir -p ServerKiln.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
 cp Package.resolved ServerKiln.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 xcodebuild -project ServerKiln.xcodeproj -scheme ServerKiln-macOS -configuration Release \
   -destination 'generic/platform=macOS' -archivePath "$OUT/ServerKiln.xcarchive" \
-  -derivedDataPath build/dd-release -onlyUsePackageVersionsFromResolvedFile \
+  -derivedDataPath build/dd-release -onlyUsePackageVersionsFromResolvedFile -skipPackagePluginValidation -skipMacroValidation \
   "${AUTH[@]}" DEVELOPMENT_TEAM="$APPLE_TEAM_ID" MARKETING_VERSION="$VERSION" \
   CURRENT_PROJECT_VERSION="$BUILD" 'ARCHS=arm64 x86_64' ONLY_ACTIVE_ARCH=NO archive
 python3 - "$OUT/ExportOptions.plist" "$APPLE_TEAM_ID" "$PROFILE" "$IDENTITY" <<'PY'

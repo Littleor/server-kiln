@@ -61,7 +61,7 @@ final class AppSettings {
 
     /// `--snapshot` renders previews with a throwaway store so real settings stay untouched.
     static let store: UserDefaults = {
-        guard CommandLine.arguments.contains("--snapshot") else {
+        guard CommandLine.arguments.contains("--snapshot") || CommandLine.arguments.contains("--subscription-schema-check") else {
             LegacyMigration.run()
             return .standard
         }

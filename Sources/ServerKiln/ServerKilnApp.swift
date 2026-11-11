@@ -1,6 +1,7 @@
 import AppKit
 import ServerKilnCore
 import SwiftUI
+import UserNotifications
 import ServerKilnUI
 
 @main
@@ -16,6 +17,18 @@ struct ServerKilnApp: App {
         signal(SIGPIPE, SIG_IGN)
         // Debug helper: `ServerKiln --probe <ssh-target>` prints one snapshot as JSON.
         let args = CommandLine.arguments
+        #if DEBUG
+        if args.contains("--check-updater-config") {
+            do {
+                try MacUpdater.validateConfiguration()
+                print("PASS: updater starts and unattended installation is disabled")
+                exit(0)
+            } catch {
+                print("FAIL: updater configuration:", error)
+                exit(1)
+            }
+        }
+        #endif
         if let i = args.firstIndex(of: "--probe"), i + 1 < args.count {
             Self.probe(args[i + 1])
         }
@@ -117,6 +130,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         guard !CommandLine.arguments.contains("--snapshot") else { return }
         Notifier.requestAuthorization()
+        if !CommandLine.arguments.contains(where: { $0.hasPrefix("--") }) {
+            if Notifier.isAvailable {
+                UNUserNotificationCenter.current().delegate = NotificationClickHandler.shared
+            }
+            MacUpdater.shared.start()
+        }
         Task { @MainActor in Monitor.shared.start() }
         let ws = NSWorkspace.shared.notificationCenter
         ws.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { _ in

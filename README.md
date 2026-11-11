@@ -112,3 +112,5 @@ and remove hostnames, usernames and sensitive commands from reports.
 [MIT](LICENSE), copyright © 2026 Littleor. Dependencies retain their own
 licenses; see [third-party notices](THIRD_PARTY_NOTICES.md). Built with SwiftUI,
 SwiftNIO SSH, Swift Crypto and the system OpenSSH client.
+
+[Mac in-app updates](docs/mac-updates.md): GitHub Releases / Sparkle，确认后安装。

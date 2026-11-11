@@ -125,11 +125,13 @@ public enum SnapshotParser {
         }
 
         // Top CPU and memory users, without our own collector / ssh noise.
-        let byCPU = parsePS(sections["TOP"] ?? []).values.sorted { ($0.cpuPercent ?? 0) > ($1.cpuPercent ?? 0) }
-        let byMem = parsePS(sections["TOPMEM"] ?? []).values.sorted { ($0.rssKB ?? 0) > ($1.rssKB ?? 0) }
+        let candidates = parsePS((sections["TOP"] ?? []) + (sections["TOPMEM"] ?? []) + (sections["PS"] ?? []))
+            .values.filter { !isCollectorNoise($0.command) }
+        let byCPU = candidates.sorted { ($0.cpuPercent ?? 0, -$0.pid) > ($1.cpuPercent ?? 0, -$1.pid) }
+        let byMem = candidates.sorted { ($0.rssKB ?? 0, -$0.pid) > ($1.rssKB ?? 0, -$1.pid) }
         var seen: Set<Int> = []
         let processes = (byCPU.prefix(6) + byMem.prefix(6))
-            .filter { !isCollectorNoise($0.command) && seen.insert($0.pid).inserted }
+            .filter { seen.insert($0.pid).inserted }
             .map { p -> GPUTask in
                 var p = p
                 p.cwd = cwd[p.pid]

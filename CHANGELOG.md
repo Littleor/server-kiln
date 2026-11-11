@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+See [release notes](docs/releases/v1.0.3.md).
+
 ## 1.0.2 — 2026-11-08
 
 First public source release of ServerKiln for macOS.

@@ -15,7 +15,7 @@ KEY="${ASC_AUTH_KEY_PATH/#\~/$HOME}"
 IDENTITY="${DEVELOPER_ID_APPLICATION:-Developer ID Application}"
 DMG="ServerKiln-$VERSION-universal.dmg"
 ZIP="ServerKiln-$VERSION-universal.zip"
-for file in "$DMG" "$ZIP" SHA256SUMS; do
+for file in "$DMG" "$ZIP" appcast.xml SHA256SUMS; do
   [ ! -e "$OUT/$file" ] || { echo "Refusing to replace $OUT/$file" >&2; exit 1; }
 done
 python3 scripts/check-release-app.py "$APP"
@@ -37,6 +37,8 @@ xcrun stapler staple "$STAGE/$DMG"
 xcrun stapler validate "$STAGE/$DMG"
 spctl --assess --type open --context context:primary-signature --verbose=2 "$STAGE/$DMG"
 ditto -c -k --keepParent "$APP" "$STAGE/$ZIP"
-(cd "$STAGE" && shasum -a 256 "$DMG" "$ZIP" > SHA256SUMS)
-mv "$STAGE/$DMG" "$STAGE/$ZIP" "$STAGE/SHA256SUMS" "$OUT/"
+scripts/prepare-mac-update.sh "$STAGE/$DMG" "$APP" "$STAGE/updates"
+cp "$STAGE/updates/appcast.xml" "$STAGE/appcast.xml"
+(cd "$STAGE" && shasum -a 256 "$DMG" "$ZIP" appcast.xml > SHA256SUMS)
+mv "$STAGE/$DMG" "$STAGE/$ZIP" "$STAGE/appcast.xml" "$STAGE/SHA256SUMS" "$OUT/"
 echo "Release artifacts: $OUT"

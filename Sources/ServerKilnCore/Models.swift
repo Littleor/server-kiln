@@ -171,7 +171,7 @@ public struct ServerSnapshot: Codable, Hashable, Sendable {
     public var isGPUServer: Bool { hasNvidiaSMI && !gpus.isEmpty }
 }
 
-/// Decides whether a GPU counts as "in use".
+/// Decides whether a GPU counts as "in use". See PRD §4.
 public struct BusyPolicy: Codable, Hashable, Sendable {
     public var utilizationThreshold: Double
     public var memoryThresholdMiB: Double

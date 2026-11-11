@@ -3,7 +3,7 @@ import Foundation
 import ServerKilnCore
 import ServerKilnSSH
 
-/// Installs, verifies and revokes the iPhone's dedicated keys.
+/// Installs, verifies and revokes the iPhone's dedicated keys (PRD F9.1/F9.2).
 /// Everything runs over the user's own `ssh` — the trusted channel — so the
 /// host keys we pin come from an authenticated session, never from a scan.
 public enum KeyDeployer {

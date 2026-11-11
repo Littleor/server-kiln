@@ -4,7 +4,7 @@ import ServerKilnCore
 import ServerKilnSSH
 import ServerKilnSync
 
-/// Mac companion coordinator: deploys the iPhone's dedicated keys, publishes the
+/// Mac side of PRD §5.9: deploys the iPhone's dedicated keys, publishes the
 /// server list to the private CloudKit database and pushes transitions.
 @MainActor
 @Observable
@@ -64,7 +64,9 @@ final class PhoneSync {
         pushEnabled = d.bool(forKey: "phonePushEnabled")
         relayEnabled = d.bool(forKey: "phoneRelayEnabled")
         relayExcluded = (d.data(forKey: "phoneRelayExcluded").flatMap { try? JSONDecoder().decode(Set<UUID>.self, from: $0) }) ?? []
-        Task { retryPendingPushes() }
+        if !CommandLine.arguments.contains("--subscription-schema-check") {
+            Task { retryPendingPushes() }
+        }
     }
 
     var isAvailable: Bool { CloudStore.isAvailable }
@@ -195,7 +197,7 @@ final class PhoneSync {
 
     func republish() { schedulePublish(immediately: true) }
 
-    // MARK: Status relay
+    // MARK: Status relay (PRD F9.9)
 
     /// Relays every enabled server (deployed or not) so the phone can show
     /// machines only this Mac can reach. Throttled: at most once per
@@ -256,7 +258,7 @@ final class PhoneSync {
             r.order = i
             r.name = server.name
             r.muted = server.muted
-            entries.append(.init(server: r, snapshot: state.snapshot, error: state.error, sampledAt: state.error == nil ? (sampled[server.id] ?? now) : now))
+            entries.append(.init(server: r, snapshot: state.snapshot, error: state.error, sampledAt: state.error == nil ? (sampled[server.id] ?? now) : now, finishedTasks: Monitor.shared.jobs[server.id]?.finished))
             signature[server.id.uuidString] = activity(server).map(\.rawValue) ?? "?"
         }
         let stateChanged = signature != lastRelaySignature

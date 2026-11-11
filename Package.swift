@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "ServerKilnUI", targets: ["ServerKilnUI"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.10.1"),
         // Vendored with RSA host key support, see Vendor/patch-nio-ssh.py.
         .package(path: "Vendor/swift-nio-ssh"),
         .package(url: "https://github.com/apple/swift-nio", from: "2.65.0"),
@@ -44,7 +45,7 @@ let package = Package(
         .target(name: "ServerKilnUI", dependencies: ["ServerKilnCore"]),
         .executableTarget(
             name: "ServerKiln",
-            dependencies: ["ServerKilnCore", "ServerKilnSSH", "ServerKilnSync", "ServerKilnUI"]
+            dependencies: ["ServerKilnCore", "ServerKilnSSH", "ServerKilnSync", "ServerKilnUI", .product(name: "Sparkle", package: "Sparkle")]
         ),
         .testTarget(
             name: "ServerKilnCoreTests",

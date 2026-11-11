@@ -11,7 +11,7 @@ struct ServerState: Equatable {
 
 /// Central state: polls each enabled server in its own loop, derives
 /// busy/idle status, records history and fires notifications on debounced
-/// transitions. Polls faster while the menu bar panel is open.
+/// transitions. Polls faster while the menu bar panel is open (PRD §5.6).
 @MainActor
 @Observable
 final class Monitor {

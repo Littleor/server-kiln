@@ -7,10 +7,13 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.10"
-    MARKETING_VERSION: "1.0.2"
-    CURRENT_PROJECT_VERSION: "6"
+    MARKETING_VERSION: "1.0.3"
+    CURRENT_PROJECT_VERSION: "11"
     CODE_SIGN_STYLE: Automatic
 packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.1
   ServerKiln:
     path: .
 targets:
@@ -32,6 +35,7 @@ targets:
         type: folder
         buildPhase: resources
     dependencies:
+      - package: Sparkle
       - package: ServerKiln
         product: ServerKilnCore
       - package: ServerKiln
@@ -60,6 +64,13 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "14.0"
+        SUFeedURL: https://github.com/Littleor/server-kiln/releases/latest/download/appcast.xml
+        SUPublicEDKey: 2BvzG3V/aQw5nifs1iuP+X17cMF4gdwgt9/3h8qbfuo=
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 86400
+        SUAllowsAutomaticUpdates: false
+        SUAutomaticallyUpdate: false
+        SUSendProfileInfo: false
         LSUIElement: true
         NSHighResolutionCapable: true
     settings:

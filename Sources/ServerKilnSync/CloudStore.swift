@@ -1,4 +1,5 @@
 import CloudKit
+import Crypto
 import Foundation
 import ServerKilnCore
 #if os(macOS)
@@ -39,8 +40,6 @@ public final class CloudStore: @unchecked Sendable {
     /// CloudKit traps without the iCloud entitlement, which unsigned
     /// `swift run` builds of the Mac app don't have.
     public static let isAvailable: Bool = {
-        // Demo rendering must never write synthetic records to the user's account.
-        guard !CommandLine.arguments.contains("--snapshot") else { return false }
         #if os(macOS)
         guard let task = SecTaskCreateFromSelf(nil),
               let value = SecTaskCopyValueForEntitlement(task, "com.apple.developer.icloud-services" as CFString, nil)
@@ -270,33 +269,77 @@ public final class CloudStore: @unchecked Sendable {
         try await database.allSubscriptions().map(\.subscriptionID)
     }
 
-    /// Makes the set of subscribed channels match `enabled`.
-    public func updateSubscriptions(enabled: Set<Channel>) async throws {
-        let existing = Set(try await database.allSubscriptions().map(\.subscriptionID))
-        var save: [CKSubscription] = []
-        var remove: [CKSubscription.ID] = []
-        for channel in Channel.allCases {
-            let has = existing.contains(channel.subscriptionID)
-            if enabled.contains(channel), !has {
-                let sub = CKQuerySubscription(recordType: channel.rawValue, predicate: NSPredicate(value: true),
-                                              subscriptionID: channel.subscriptionID, options: [.firesOnRecordCreation])
-                let info = CKSubscription.NotificationInfo()
-                // "%1$@" formats the record's own title/body fields.
-                info.titleLocalizationKey = "%1$@"
-                info.titleLocalizationArgs = ["title"]
-                info.alertLocalizationKey = "%1$@"
-                info.alertLocalizationArgs = ["body"]
-                info.soundName = "default"
-                info.desiredKeys = ["serverID", "kind"]
-                info.shouldSendContentAvailable = true
-                info.category = "serverkiln.event"
-                sub.notificationInfo = info
-                save.append(sub)
-            } else if !enabled.contains(channel), has {
-                remove.append(channel.subscriptionID)
+    // Keep one predicate shape for every mute-list size. CloudKit deploys
+    // subscription TYPES separately from ordinary record field indexes.
+    static func eventPredicate(excluding ids: Set<String>) -> NSPredicate {
+        NSPredicate(format: "NOT (serverID IN %@)", (ids.isEmpty ? ["__serverkiln_no_muted_servers__"] : ids.sorted()) as NSArray)
+    }
+
+    static func eventSubscriptionID(_ channel: Channel, excluding ids: Set<String>) -> String {
+        let bytes = Data(ids.sorted().joined(separator: "\n").utf8)
+        let digest = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+        return channel.subscriptionID + ".v2." + digest
+    }
+
+    /// Production and schema checks must share the complete notification
+    /// configuration: desiredKeys and localization arguments add CloudKit's
+    /// internal notif_* fields, even when the predicate is unchanged.
+    static func eventSubscription(_ channel: Channel, predicate: NSPredicate, id: String) -> CKQuerySubscription {
+        let sub = CKQuerySubscription(recordType: channel.rawValue, predicate: predicate,
+                                      subscriptionID: id, options: [.firesOnRecordCreation])
+        let info = CKSubscription.NotificationInfo()
+        info.titleLocalizationKey = "%1$@"
+        info.titleLocalizationArgs = ["title"]
+        info.alertLocalizationKey = "%1$@"
+        info.alertLocalizationArgs = ["body"]
+        info.soundName = "default"
+        info.desiredKeys = ["serverID", "kind"]
+        info.shouldSendContentAvailable = true
+        info.category = "serverkiln.event"
+        sub.notificationInfo = info
+        return sub
+    }
+
+    /// Create replacements before deleting working subscriptions. Failed schema
+    /// deployment must not silently remove the user's existing notifications.
+    public func updateSubscriptions(enabled: Set<Channel>, excludedServerIDs: Set<String> = []) async throws {
+        let subscriptions = try await database.allSubscriptions()
+        let existing = Set(subscriptions.map(\.subscriptionID))
+        var desired: Set<String> = []
+        for channel in Channel.allCases where enabled.contains(channel) {
+            let id = Self.eventSubscriptionID(channel, excluding: excludedServerIDs)
+            desired.insert(id)
+            guard !existing.contains(id) else { continue }
+            let sub = Self.eventSubscription(channel, predicate: Self.eventPredicate(excluding: excludedServerIDs), id: id)
+            _ = try await database.save(sub)
+        }
+        let obsolete = existing.filter { id in
+            !desired.contains(id) && Channel.allCases.contains {
+                id == $0.subscriptionID || id.hasPrefix($0.subscriptionID + ".v2.")
             }
         }
-        guard !save.isEmpty || !remove.isEmpty else { return }
-        _ = try await database.modifySubscriptions(saving: save, deleting: remove)
+        if !obsolete.isEmpty {
+            let results = try await database.modifySubscriptions(saving: [], deleting: Array(obsolete))
+            for result in results.deleteResults.values { _ = try result.get() }
+        }
+    }
+
+    /// Run from a signed development build before deploying schema, then a
+    /// production build afterwards. No event records or user subscriptions are
+    /// touched. Temporary subscriptions use the EXACT production payload and
+    /// are removed immediately; the check never writes test events.
+    public func verifyEventSubscriptionTypes() async throws {
+        for channel in Channel.allCases {
+            // Also seed the original unfiltered type for already-shipped apps.
+            let predicates = [NSPredicate(value: true),
+                              Self.eventPredicate(excluding: []),
+                              Self.eventPredicate(excluding: ["probe-a", "probe-b"])]
+            for predicate in predicates {
+                let id = "serverkiln.schema-probe." + UUID().uuidString
+                let sub = Self.eventSubscription(channel, predicate: predicate, id: id)
+                _ = try await database.save(sub)
+                _ = try await database.deleteSubscription(withID: id)
+            }
+        }
     }
 }

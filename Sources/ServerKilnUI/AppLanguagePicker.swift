@@ -28,7 +28,7 @@ public struct AppLanguageModifier: ViewModifier {
     public init() {}
     public func body(content: Content) -> some View {
         content
-            .environment(\.locale, AppLanguage.locale)
+            .environment(\.locale, language == "system" ? .current : Locale(identifier: language))
             .id(language)
     }
 }

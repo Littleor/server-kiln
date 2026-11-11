@@ -45,16 +45,13 @@ if command -v nvidia-smi >/dev/null 2>&1; then
 else
   echo "@@NOGPU"
 fi
-top=""
-if [ -z "$pids" ]; then
-  # Only needed when GPU processes are not visible (containers, CPU-only):
-  # top CPU users, plus top memory users for the process list.
-  top=$(ps -eo pid=,user=,etimes=,pcpu=,rss=,args= --sort=-pcpu 2>/dev/null | head -n 12 | cut -c1-600)
-  echo "@@TOP"; echo "$top"
-  echo "@@TOPMEM"; ps -eo pid=,user=,etimes=,pcpu=,rss=,args= --sort=-rss 2>/dev/null | head -n 8 | cut -c1-600
-fi
+# Sample both rankings on every server, including hosts with GPU workloads.
+top=$(ps -eo pid=,user=,etimes=,pcpu=,rss=,args= --sort=-pcpu 2>/dev/null | head -n 20 | cut -c1-600)
+topmem=$(ps -eo pid=,user=,etimes=,pcpu=,rss=,args= --sort=-rss 2>/dev/null | head -n 20 | cut -c1-600)
+echo "@@TOP"; echo "$top"
+echo "@@TOPMEM"; echo "$topmem"
 echo "@@CWD"
-for p in $(echo "$pids" | tr ',' ' ') $(echo "$top" | awk '{print $1}'); do
+for p in $(echo "$pids" | tr ',' ' ') $(printf '%s\n%s\n' "$top" "$topmem" | awk '{print $1}'); do
   d=$(readlink "/proc/$p/cwd" 2>/dev/null) && echo "$p $d"
 done
 echo "@@END"

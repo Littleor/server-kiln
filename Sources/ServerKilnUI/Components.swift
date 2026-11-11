@@ -801,10 +801,12 @@ public struct ProcessSection: View {
     public var memTotalKB: Double?
     /// `ps` reports 100% per core; meters are relative to the whole host.
     public var cores: Int?
+    private var initiallyExpandedProcess: Bool
     @State private var byMemory = false
     @State private var expanded = true
 
-    public init(processes: [GPUTask], memTotalKB: Double?, cores: Int? = nil) {
+    public init(processes: [GPUTask], memTotalKB: Double?, cores: Int? = nil, initiallyExpandedProcess: Bool = false) {
+        self.initiallyExpandedProcess = initiallyExpandedProcess
         self.processes = processes
         self.memTotalKB = memTotalKB
         self.cores = cores
@@ -838,7 +840,7 @@ public struct ProcessSection: View {
             if expanded {
                 VStack(spacing: 3) {
                     ForEach(Array(sorted)) { p in
-                        ProcessRow(process: p, byMemory: byMemory, memTotalKB: memTotalKB, cores: cores)
+                        ProcessRow(expanded: initiallyExpandedProcess && p.id == sorted.first?.id, process: p, byMemory: byMemory, memTotalKB: memTotalKB, cores: cores)
                     }
                 }
             }
@@ -847,6 +849,7 @@ public struct ProcessSection: View {
 }
 
 struct ProcessRow: View {
+    @State var expanded = false
     var process: GPUTask
     var byMemory: Bool
     var memTotalKB: Double?
@@ -855,27 +858,102 @@ struct ProcessRow: View {
     var body: some View {
         let cpu = (process.cpuPercent ?? 0) / 100 / Double(max(1, cores ?? 1))
         let mem = memTotalKB.map { (process.rssKB ?? 0) / max(1, $0) } ?? 0
-        HStack(spacing: 8) {
-            Text(LastJobSection.short(process.command))
-                .font(.system(size: 10.5, design: .monospaced))
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .help(process.command)
-            Text(process.user).font(.system(size: 9.5)).foregroundStyle(.tertiary).lineLimit(1).frame(width: 44, alignment: .trailing)
-            // The sort key gets the meter; the other value is plain text.
-            if byMemory {
-                Text(String(format: "%.0f%%", process.cpuPercent ?? 0)).frame(width: 38, alignment: .trailing)
+        VStack(alignment: .leading, spacing: 6) {
+            Button { expanded.toggle() } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: expanded ? "chevron.down" : "chevron.right").font(.system(size: 8))
+                    Text(LastJobSection.short(process.command))
+                        .font(.system(size: 10.5, design: .monospaced))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .help(process.command)
+                    Text(process.user).font(.system(size: 9.5)).foregroundStyle(.tertiary).lineLimit(1).frame(width: 44, alignment: .trailing)
+                    // The sort key gets the meter; the other value is plain text.
+                    if byMemory {
+                        Text(String(format: "%.0f%%", process.cpuPercent ?? 0)).lineLimit(1).minimumScaleFactor(0.75).frame(width: 48, alignment: .trailing)
+                            .foregroundStyle(.secondary)
+                        Meter(fraction: mem, color: Theme.heat(mem), height: 4).frame(width: 40)
+                        Text(Format.kb(process.rssKB)).frame(width: 40, alignment: .trailing)
+                    } else {
+                        Meter(fraction: min(1, cpu), color: Theme.heat(min(1, cpu)), height: 4).frame(width: 40)
+                        Text(String(format: "%.0f%%", process.cpuPercent ?? 0)).lineLimit(1).minimumScaleFactor(0.75).frame(width: 48, alignment: .trailing)
+                        Text(Format.kb(process.rssKB)).frame(width: 40, alignment: .trailing).foregroundStyle(.secondary)
+                    }
+                }
+                .font(.system(size: 10).monospacedDigit())
+                .padding(.vertical, 2)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if expanded {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(process.command)
+                        .font(.system(size: 11, design: .monospaced))
+                        .textSelection(.enabled)
+                    HStack(spacing: 10) {
+                        Text("PID " + String(process.pid))
+                        Label(process.user, systemImage: "person")
+                        Label(Format.duration(process.elapsedSeconds.map(Double.init)), systemImage: "timer")
+                    }
+                    .font(.system(size: 10).monospacedDigit())
                     .foregroundStyle(.secondary)
-                Meter(fraction: mem, color: Theme.heat(mem), height: 4).frame(width: 40)
-                Text(Format.kb(process.rssKB)).frame(width: 40, alignment: .trailing)
-            } else {
-                Meter(fraction: min(1, cpu), color: Theme.heat(min(1, cpu)), height: 4).frame(width: 40)
-                Text(String(format: "%.0f%%", process.cpuPercent ?? 0)).frame(width: 38, alignment: .trailing)
-                Text(Format.kb(process.rssKB)).frame(width: 40, alignment: .trailing).foregroundStyle(.secondary)
+                    HStack(spacing: 10) {
+                        Text("CPU " + (process.cpuPercent.map { String(format: "%.1f%%", $0) } ?? "—"))
+                        Text(String(appLocalized: "内存") + " " + Format.kb(process.rssKB))
+                        if memTotalKB != nil, process.rssKB != nil {
+                            Text(String(format: "%.1f%%", mem * 100))
+                        }
+                    }
+                    .font(.system(size: 10).monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    if let cwd = process.cwd {
+                        Text(cwd).font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(.secondary).textSelection(.enabled)
+                    }
+                    ProcessCopyButtons(command: process.command, pid: process.pid)
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color.primary.opacity(0.04)))
             }
         }
-        .font(.system(size: 10).monospacedDigit())
-        .padding(.vertical, 2)
+        .font(.caption)
+    }
+}
+
+
+// Shared with task details so both surfaces use identical copy actions.
+public struct ProcessCopyButtons: View {
+    public var command: String
+    public var pid: Int
+
+    public init(command: String, pid: Int) {
+        self.command = command
+        self.pid = pid
+    }
+
+    public var body: some View {
+        HStack {
+            Spacer()
+            Button { copy(command) } label: {
+                Label(String(appLocalized: "复制命令"), systemImage: "doc.on.doc")
+            }
+            .accessibilityIdentifier("copy-command")
+            Button { copy(String(pid)) } label: {
+                Label(String(appLocalized: "复制 PID"), systemImage: "number")
+            }
+            .accessibilityIdentifier("copy-pid")
+        }
+        .buttonStyle(PillButtonStyle())
+    }
+
+    private func copy(_ text: String) {
+        #if os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        #else
+        UIPasteboard.general.string = text
+        #endif
     }
 }

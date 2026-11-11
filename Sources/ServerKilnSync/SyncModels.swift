@@ -84,6 +84,13 @@ public struct SyncedPayload: Codable, Hashable, Sendable {
         self.updatedAt = updatedAt
     }
 
+    /// Resolve a notification's original Mac ID after endpoint deduplication.
+    public static func resolveServerID(_ id: UUID, servers: [SyncedServer], sources: [SyncedServer]) -> UUID? {
+        if servers.contains(where: { $0.id == id }) { return id }
+        guard let source = sources.first(where: { $0.id == id }) else { return nil }
+        return servers.first(where: { $0.endpointKey == source.endpointKey })?.id
+    }
+
     /// One list from every Mac's payload: a server deployed from two Macs
     /// keeps the most recent deployment (whose keys are the live ones on the
     /// server); the most recently updated Mac's busy thresholds win.
@@ -134,7 +141,7 @@ public extension ActivityEvent {
     }
 }
 
-/// One Mac's latest view of every server it monitors, so the
+/// One Mac's latest view of every server it monitors (PRD F9.9), so the
 /// phone can show machines only the Mac can reach.
 public struct RelayStatus: Codable, Hashable, Sendable {
     public struct Server: Codable, Hashable, Sendable {
@@ -144,12 +151,14 @@ public struct RelayStatus: Codable, Hashable, Sendable {
         public var snapshot: ServerSnapshot?
         public var error: String?
         public var sampledAt: Date
+        public var finishedTasks: [TaskRecord]?
 
-        public init(server: SyncedServer, snapshot: ServerSnapshot?, error: String?, sampledAt: Date) {
+        public init(server: SyncedServer, snapshot: ServerSnapshot?, error: String?, sampledAt: Date, finishedTasks: [TaskRecord]? = nil) {
             self.server = server
             self.snapshot = snapshot
             self.error = error
             self.sampledAt = sampledAt
+            self.finishedTasks = finishedTasks
         }
     }
 
