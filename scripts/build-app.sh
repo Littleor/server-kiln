@@ -16,6 +16,11 @@ trap 'rm -rf "$STAGE"' EXIT
 mkdir -p "$STAGE/ServerKiln.app/Contents/MacOS" "$STAGE/ServerKiln.app/Contents/Resources"
 CONTENTS="$STAGE/ServerKiln.app/Contents"
 cp "$BIN" "$CONTENTS/MacOS/ServerKiln"
+# SwiftPM links Sparkle dynamically. Bundle it and add a bundle-relative rpath.
+mkdir -p "$CONTENTS/Frameworks"
+ditto "$(dirname "$BIN")/Sparkle.framework" "$CONTENTS/Frameworks/Sparkle.framework"
+install_name_tool -add_rpath @executable_path/../Frameworks "$CONTENTS/MacOS/ServerKiln"
+
 "$BIN" --write-iconset "$STAGE/AppIcon.iconset"
 iconutil -c icns "$STAGE/AppIcon.iconset" -o "$CONTENTS/Resources/AppIcon.icns"
 for catalog in Resources/*.xcstrings; do
@@ -42,7 +47,7 @@ cat > "$CONTENTS/Info.plist" <<PLIST
   <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
-codesign --force --sign - "$STAGE/ServerKiln.app"
+codesign --force --deep --sign - "$STAGE/ServerKiln.app"
 codesign --verify --deep --strict "$STAGE/ServerKiln.app"
 lipo "$CONTENTS/MacOS/ServerKiln" -verify_arch arm64 x86_64
 mkdir -p dist
