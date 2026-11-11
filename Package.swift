@@ -17,7 +17,7 @@ let package = Package(
         // Vendored with RSA host key support, see Vendor/patch-nio-ssh.py.
         .package(path: "Vendor/swift-nio-ssh"),
         .package(url: "https://github.com/apple/swift-nio", from: "2.65.0"),
-        .package(url: "https://github.com/apple/swift-crypto", "3.0.0" ..< "5.0.0"),
+        .package(url: "https://github.com/apple/swift-crypto", "3.0.0" ..< "6.0.0"),
     ],
     targets: [
         .target(name: "ServerKilnCore"),
