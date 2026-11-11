@@ -9,3 +9,11 @@ condition = "AND"
 paths = ['''^Sources/ServerKilnSSH/SSHConnection\.swift$''']
 regexTarget = "secret"
 regexes = ['''^Curve25519\.Signing\.PrivateKey$''']
+
+# Public Ed25519 verification key embedded in distributed apps; never a secret.
+[[allowlists]]
+description = "Exact public Sparkle verification key in app metadata"
+condition = "AND"
+paths = ['''^project\.yml$''']
+regexTarget = "secret"
+regexes = ['''^2BvzG3V/aQw5nifs1iuP\+X17cMF4gdwgt9/3h8qbfuo=$''']
