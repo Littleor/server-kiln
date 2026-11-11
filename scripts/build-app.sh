@@ -20,8 +20,9 @@ cp "$BIN" "$CONTENTS/MacOS/ServerKiln"
 mkdir -p "$CONTENTS/Frameworks"
 ditto "$(dirname "$BIN")/Sparkle.framework" "$CONTENTS/Frameworks/Sparkle.framework"
 install_name_tool -add_rpath @executable_path/../Frameworks "$CONTENTS/MacOS/ServerKiln"
+codesign --force --sign - "$CONTENTS/MacOS/ServerKiln"
 
-"$BIN" --write-iconset "$STAGE/AppIcon.iconset"
+"$CONTENTS/MacOS/ServerKiln" --write-iconset "$STAGE/AppIcon.iconset"
 iconutil -c icns "$STAGE/AppIcon.iconset" -o "$CONTENTS/Resources/AppIcon.icns"
 for catalog in Resources/*.xcstrings; do
   xcrun xcstringstool compile "$catalog" --output-directory "$CONTENTS/Resources"
