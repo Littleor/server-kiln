@@ -14,7 +14,7 @@ Mac 使用 Sparkle 2.10.1 完成下载、Ed25519 验签、应用替换和重启�
 4. 在同一个 GitHub Release 上传DMG、ZIP、appcast.xml 和 SHA256SUMS，核对 tag 与 appcast 下载 URL 一致，再发布为正式 Latest Release。脚本只准备本地产物，不自动创建或发布 GitHub Release。
 5. 用已安装的上一版点击检查更新，核对版本、说明及安装确认。完成真实升级测试后再广泛发布。
 
-当前 GitHub v1.0.2 尚无 appcast。手动检查兼容这种旧 Release：已安装该版本时显示最新；若发现更新但缺少清单，提供打开 GitHub 的入口。GitHub API 不可用（断网、匿名请求超过每小时 60 次限制）时，手动检查直接交给 Sparkle 读取 appcast。后台检查不会自行下载安装。后续 Release 必须同时带上 appcast 才能应用内更新。
+v1.0.2 等旧 Release 没有 appcast；从 v1.0.3 开始，正式 Release 同时发布签名更新清单。手动检查兼容这种旧 Release：已安装该版本时显示最新；若发现更新但缺少清单，提供打开 GitHub 的入口。GitHub API 不可用（断网、匿名请求超过每小时 60 次限制）时，手动检查直接交给 Sparkle 读取 appcast。后台检查不会自行下载安装。后续 Release 必须同时带上 appcast 才能应用内更新。
 
 ## 签名密钥
 
