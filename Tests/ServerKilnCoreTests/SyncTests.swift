@@ -366,3 +366,43 @@ final class TaskTrackerTests: XCTestCase {
         XCTAssertNil(t.last)
     }
 }
+
+final class EventSubscriptionTests: XCTestCase {
+    /// Must stay byte-for-byte the shape deployed to Production since 1.0.0.
+    func testSubscriptionsKeepTheOriginalUnfilteredShape() throws {
+        for channel in CloudStore.Channel.allCases {
+            let sub = CloudStore.eventSubscription(channel)
+            XCTAssertEqual(sub.subscriptionID, "serverkiln." + channel.rawValue)
+            XCTAssertEqual(sub.recordType, channel.rawValue)
+            XCTAssertEqual(sub.predicate.predicateFormat, "TRUEPREDICATE")
+            XCTAssertEqual(sub.querySubscriptionOptions, [.firesOnRecordCreation])
+            XCTAssertNil(sub.zoneID)
+            let info = try XCTUnwrap(sub.notificationInfo)
+            XCTAssertEqual(Set(info.desiredKeys ?? []), Set(["serverID", "kind"]))
+            XCTAssertEqual(info.titleLocalizationArgs, ["title"])
+            XCTAssertEqual(info.alertLocalizationArgs, ["body"])
+            XCTAssertEqual(info.titleLocalizationKey, "%1$@")
+            XCTAssertEqual(info.alertLocalizationKey, "%1$@")
+            XCTAssertEqual(info.soundName, "default")
+            XCTAssertEqual(info.category, "serverkiln.event")
+            XCTAssertTrue(info.shouldSendContentAvailable)
+        }
+    }
+
+    func testFilteredAndProbeSubscriptionsFromEarlierBuildsAreRemoved() {
+        let existing: Set<String> = [
+            "serverkiln.EventIdle", "serverkiln.EventBusy", "serverkiln.EventConnection",
+            "serverkiln.EventIdle.v2.abc", "serverkiln.delivery-probe.x", "serverkiln.plain-probe.y",
+            "someone-else",
+        ]
+        XCTAssertEqual(CloudStore.obsoleteSubscriptions(existing, enabled: [.idle, .busy]),
+                       ["serverkiln.EventConnection", "serverkiln.EventIdle.v2.abc",
+                        "serverkiln.delivery-probe.x", "serverkiln.plain-probe.y"])
+        XCTAssertEqual(CloudStore.obsoleteSubscriptions(["serverkiln.EventIdle"], enabled: [.idle]), [])
+    }
+
+    func testNotificationPrefsRoundTrip() throws {
+        let prefs = NotificationPrefs(mutedEndpoints: ["a@gpu:22"], updatedAt: Date(timeIntervalSince1970: 1_000))
+        XCTAssertEqual(try JSONDecoder().decode(NotificationPrefs.self, from: JSONEncoder().encode(prefs)), prefs)
+    }
+}

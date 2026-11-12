@@ -42,6 +42,19 @@ public struct SyncedServer: Codable, Identifiable, Hashable, Sendable {
     public var endpointKey: String { "\(endpoint.user)@\(endpoint.host.lowercased()):\(endpoint.port)" }
 }
 
+/// Servers the iPhone muted, by `SyncedServer.endpointKey` so a machine
+/// added on several Macs is muted once. Shared via CloudKit; the Mac checks
+/// it before posting an event, so muted servers never create a push.
+public struct NotificationPrefs: Codable, Hashable, Sendable {
+    public var mutedEndpoints: Set<String>
+    public var updatedAt: Date
+
+    public init(mutedEndpoints: Set<String> = [], updatedAt: Date = Date()) {
+        self.mutedEndpoints = mutedEndpoints
+        self.updatedAt = updatedAt
+    }
+}
+
 /// A busy/idle/offline transition the Mac observed, pushed to the phone.
 public struct ActivityEvent: Codable, Hashable, Identifiable, Sendable {
     public enum Kind: String, Codable, CaseIterable, Sendable {

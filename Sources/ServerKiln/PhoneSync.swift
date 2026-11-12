@@ -37,6 +37,8 @@ final class PhoneSync {
     private struct PendingPush: Codable {
         var event: ActivityEvent
         var previous: String
+        /// Optional so outboxes saved by older builds still decode.
+        var endpointKey: String?
     }
     @ObservationIgnored private var pendingPushes: [String: PendingPush] = [:] {
         didSet { save(pendingPushes, "phonePendingPushes") }
@@ -64,9 +66,7 @@ final class PhoneSync {
         pushEnabled = d.bool(forKey: "phonePushEnabled")
         relayEnabled = d.bool(forKey: "phoneRelayEnabled")
         relayExcluded = (d.data(forKey: "phoneRelayExcluded").flatMap { try? JSONDecoder().decode(Set<UUID>.self, from: $0) }) ?? []
-        if !CommandLine.arguments.contains("--subscription-schema-check") {
-            Task { retryPendingPushes() }
-        }
+        Task { retryPendingPushes() }
     }
 
     var isAvailable: Bool { CloudStore.isAvailable }
@@ -298,7 +298,7 @@ final class PhoneSync {
         // the first one's save creates a push.
         let name = ActivityEvent.dedupName(endpointKey: server.endpointKey, kind: event.kind, date: event.date)
         let previous = ActivityEvent.dedupName(endpointKey: server.endpointKey, kind: event.kind, date: event.date, previous: true)
-        pendingPushes[name] = PendingPush(event: event, previous: previous)
+        pendingPushes[name] = PendingPush(event: event, previous: previous, endpointKey: server.endpointKey)
         retryPendingPushes()
     }
 
@@ -317,6 +317,13 @@ final class PhoneSync {
                 for attempt in 0..<5 {
                     guard pushEnabled, !Task.isCancelled else { return }
                     do {
+                        // Muted on the iPhone: drop it here, since the phone's
+                        // subscriptions deliberately have no server filter.
+                        if let key = pending.endpointKey,
+                           try await cloud.fetchNotificationPrefs()?.mutedEndpoints.contains(key) == true {
+                            pendingPushes[name] = nil
+                            return
+                        }
                         if try await !cloud.wasPushed(name, previous: pending.previous) {
                             try await cloud.post(pending.event, recordName: name)
                         }
