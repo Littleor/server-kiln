@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>ServerKiln</AssemblyName>
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../../VERSION').Trim())</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>../../build/windows/AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../ServerKiln.Windows.Core/ServerKiln.Windows.Core.csproj" />
+    <Resource Include="../../build/windows/AppIcon.ico" Link="AppIcon.ico" />
+    <Content Include="../../LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../THIRD_PARTY_NOTICES.md" Link="THIRD_PARTY_NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(NetCoreRoot)LICENSE.txt" Link="Licenses/dotnet-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" Condition="Exists('$(NetCoreRoot)LICENSE.txt')" />
+    <Content Include="$(NetCoreRoot)ThirdPartyNotices.txt" Link="Licenses/dotnet-ThirdPartyNotices.txt" CopyToOutputDirectory="PreserveNewest" Condition="Exists('$(NetCoreRoot)ThirdPartyNotices.txt')" />
+  </ItemGroup>
+  <Target Name="PrepareWindowsIcon" BeforeTargets="PrepareForBuild"
+          Inputs="$(MSBuildThisFileDirectory)../../docs/screenshots/app-icon.png;$(MSBuildThisFileDirectory)../../scripts/prepare-windows-assets.ps1"
+          Outputs="$(MSBuildThisFileDirectory)../../build/windows/AppIcon.ico">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)../../scripts/prepare-windows-assets.ps1&quot;" />
+  </Target>
+</Project>

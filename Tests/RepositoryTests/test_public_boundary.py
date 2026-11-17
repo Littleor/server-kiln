@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -42,7 +43,7 @@ class PublicBoundaryTests(unittest.TestCase):
             private.rename(root / 'docs/public.md')
             git('add', '.')
             git('commit', '-qm', 'test: remove fixture')
-            result = subprocess.run(['python3', 'scripts/check-public-tree.py', '--history'],
+            result = subprocess.run([sys.executable, 'scripts/check-public-tree.py', '--history'],
                                     cwd=root, text=True, capture_output=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn('docs/PRD.md', result.stderr)

@@ -147,7 +147,9 @@ public enum SnapshotParser {
     static func splitSections(_ output: String) -> [String: [String]] {
         var result: [String: [String]] = [:]
         var current: String?
-        for raw in output.split(separator: "\n", omittingEmptySubsequences: false) {
+        // Swift treats CRLF as one Character, so normalize it before splitting on LF.
+        let normalized = output.replacingOccurrences(of: "\r\n", with: "\n")
+        for raw in normalized.split(separator: "\n", omittingEmptySubsequences: false) {
             let line = String(raw).replacingOccurrences(of: "\r", with: "")
             if line.hasPrefix("@@") {
                 current = String(line.dropFirst(2)).trimmed

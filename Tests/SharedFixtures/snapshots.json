@@ -1,0 +1,33 @@
+[
+  {
+    "name": "gpu-system-and-workload",
+    "output": "@@HOST\ngpu-node-1\n@@OS\nUbuntu 22.04.4 LTS\n@@UPTIME\n356421.52\n@@NCPU\n64\n@@LOAD\n12.50 11.20 10.03 5/1234 99999\n@@CPU\ncpu 1000 0 1000 8000 0 0 0 0 0 0\ncpu 1600 0 1400 8800 200 0 0 0 0 0\n@@MEM\nMemTotal: 527952936 kB\nMemAvailable: 263976468 kB\n@@DISK\n/dev/nvme0n1p2 1921724676 960862338 863171876 53% /\n@@NET\n1000.5 2000000 500000\n@@GPU\n0, GPU-aaa, NVIDIA GeForce RTX 4090, 98, 22000, 24564, 71, 410.50, 450.00\n1, GPU-bbb, NVIDIA GeForce RTX 4090, 0, 3, 24564, 34, 20.12, 450.00\n@@APPS\nGPU-aaa, 4242, 21980\n@@PS\n4242 researcher 7384 99.5 10485760 python train.py --config configs/llama.yaml\n@@TOP\n4242 researcher 7384 99.5 10485760 python train.py --config configs/llama.yaml\n@@CWD\n4242 /home/researcher/proj with space\n@@END\n",
+    "hostname": "gpu-node-1", "gpuCount": 2, "busyCount": 1, "cpuUsage": 0.5,
+    "taskPids": [4242], "taskMemory": 21980, "hasGpuError": false
+  },
+  {
+    "name": "cpu-only-crlf",
+    "output": "@@HOST\r\ncpu-box\r\n@@NOGPU\r\n@@TOP\r\n1 root 100 0.0 1000 /sbin/init\r\n200 researcher 50 250.0 204800 /usr/bin/python3 preprocess.py\r\n@@END\r\n",
+    "hostname": "cpu-box", "gpuCount": 0, "busyCount": 0, "taskPids": [200], "hasGpuError": false
+  },
+  {
+    "name": "multi-gpu-process",
+    "output": "@@GPU\n0, GPU-a, A100, 90, 40000, 81920, 60, 300, 400\n1, GPU-b, A100, 90, 40000, 81920, 60, 300, 400\n@@APPS\nGPU-a, 10, 39000\nGPU-b, 10, 39000\n@@PS\n10 researcher 60 180.0 2048000 torchrun --nproc 2 train.py\n@@END\n",
+    "hostname": "", "gpuCount": 2, "busyCount": 2, "taskPids": [10], "taskMemory": 78000, "hasGpuError": false
+  },
+  {
+    "name": "container-hidden-process",
+    "output": "@@HOST\ncontainer\n@@GPU\n0, GPU-a, NVIDIA GeForce RTX 5090, 100, 30000, 32607, 70, 500, 575\n@@APPS\nGPU-a, 98765, 29000\n@@PS\n@@TOP\n321 root 4000 101.0 4096000 /opt/conda/bin/python -m torch.distributed.run train.py\n99 root 5000 2.0 8000 sshd: root@notty\n@@END\n",
+    "hostname": "container", "gpuCount": 1, "busyCount": 1, "taskPids": [321], "taskMemory": 29000, "hasGpuError": false
+  },
+  {
+    "name": "nvidia-driver-failure",
+    "output": "@@HOST\nbroken\n@@GPU\nNVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver.\n@@APPS\n@@PS\n@@END\n",
+    "hostname": "broken", "gpuCount": 0, "busyCount": 0, "taskPids": [], "hasGpuError": true
+  },
+  {
+    "name": "not-available-power-and-first-network-rate",
+    "output": "@@HOST\na100\n@@NET\n100 1000 2000\n102 3048 6096\n@@GPU\n0, GPU-x, NVIDIA A100-SXM4-80GB, 0, 1, 81920, 30, [N/A], [N/A]\n@@TOP\n10 root 100 99 1000 python -m gpustat\n20 root 100 99 1000 python /opt/tools/nvitop.py\n@@END\n",
+    "hostname": "a100", "gpuCount": 1, "busyCount": 0, "taskPids": [], "hasGpuError": false
+  }
+]

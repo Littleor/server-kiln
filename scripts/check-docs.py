@@ -9,7 +9,7 @@ from urllib.parse import unquote
 root = Path(__file__).resolve().parents[1]
 errors = []
 for file in list(root.glob('*.md')) + list((root / 'docs').rglob('*.md')):
-    text = file.read_text()
+    text = file.read_text(encoding='utf-8')
     links = re.findall(r'\]\(([^\s)]+)\)', text)
     links += re.findall(r'(?:src|href)="([^"]+)"', text)
     for target in links:
@@ -18,15 +18,15 @@ for file in list(root.glob('*.md')) + list((root / 'docs').rglob('*.md')):
         path = unquote(target.split('#')[0])
         if not (file.parent / path).exists():
             errors.append(f'{file.relative_to(root)}: missing link {target}')
-version = (root / 'VERSION').read_text().strip()
-build = (root / 'BUILD_NUMBER').read_text().strip()
-project = (root / 'project.yml').read_text()
+version = (root / 'VERSION').read_text(encoding='utf-8').strip()
+build = (root / 'BUILD_NUMBER').read_text(encoding='utf-8').strip()
+project = (root / 'project.yml').read_text(encoding='utf-8')
 if not re.fullmatch(r'\d+\.\d+\.\d+', version) or not build.isdigit():
     errors.append('Invalid VERSION or BUILD_NUMBER')
 for key, value in [('MARKETING_VERSION', version), ('CURRENT_PROJECT_VERSION', build)]:
     if f'{key}: "{value}"' not in project:
         errors.append(f'project.yml {key} does not match its version file')
-catalog = json.loads((root / 'Resources/Localizable.xcstrings').read_text())
+catalog = json.loads((root / 'Resources/Localizable.xcstrings').read_text(encoding='utf-8'))
 for key, entry in catalog['strings'].items():
     if entry.get('extractionState') == 'stale':
         continue

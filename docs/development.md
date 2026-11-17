@@ -1,5 +1,9 @@
 # Development
 
+For .NET / WPF development, see the [Windows guide](windows.md). The steps below
+describe the existing Mac toolchain. CI retains this Mac build and additionally
+builds and tests the Windows application.
+
 ## Toolchain
 
 - macOS with Xcode 26.3 / Swift 6.2 or newer selected via `xcode-select`.

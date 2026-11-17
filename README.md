@@ -3,18 +3,20 @@
 </p>
 
 <h1 align="center">ServerKiln</h1>
-<p align="center">Your GPU servers, at a glance. Right in the Mac menu bar.</p>
+<p align="center">Your GPU servers, at a glance. Mac menu bar and Windows system tray.</p>
 <p align="center">
   <a href="https://github.com/Littleor/server-kiln/releases/latest"><img src="https://img.shields.io/github/v/release/Littleor/server-kiln?color=e58b4a" alt="Latest release"></a>
   <a href="https://github.com/Littleor/server-kiln/actions/workflows/ci.yml"><img src="https://github.com/Littleor/server-kiln/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-black?logo=apple" alt="macOS 14 or later">
+  <img src="https://img.shields.io/badge/Windows-11_x64-0078d4" alt="Windows 11 x64">
   <img src="https://img.shields.io/badge/Apple_Silicon_%2B_Intel-universal-555" alt="Universal app">
 </p>
 <p align="center"><b>English</b> · <a href="README.zh-CN.md">简体中文</a></p>
 <p align="center">
   <a href="https://github.com/Littleor/server-kiln/releases/latest">Download for Mac</a> ·
   <a href="docs/getting-started.md">Get started</a> ·
+  <a href="docs/windows.md">Windows guide</a> ·
   <a href="docs/troubleshooting.md">Troubleshooting</a> ·
   <a href="https://serverkiln.littleor.cn/en/">Website</a>
 </p>
@@ -24,6 +26,11 @@ over SSH. See which GPUs are busy, inspect training processes, follow resource
 history and get notified when a machine becomes idle. Basic monitoring uses
 your existing SSH configuration and installs no server daemon.
 
+The independent **Windows tray client** provides monitoring,
+local history and optional iPhone notifications through Bark. See the
+[Windows guide](docs/windows.md) for installation, builds and mobile limitations.
+See the [platform feature matrix](docs/windows-compatibility.md) for desktop differences.
+
 ## See your fleet
 
 <p align="center">
@@ -31,6 +38,7 @@ your existing SSH configuration and installs no server daemon.
   <img src="docs/screenshots/en/panel-expanded-light.png" width="350" alt="Expanded server with per-GPU metrics in light mode">
 </p>
 <p align="center"><img src="docs/screenshots/en/history-dark.png" width="850" alt="GPU utilization and memory history"></p>
+<p align="center"><img src="docs/screenshots/windows/en/overview-light.png" width="850" alt="Windows desktop GPU monitoring"></p>
 <p align="center"><sub>All screenshots use synthetic demo servers and workloads.</sub></p>
 
 ## Why ServerKiln?
@@ -71,12 +79,14 @@ and history stays on your Mac. No analytics SDK or project-operated telemetry
 backend is included. SSH reads process commands and paths, so treat diagnostic
 output as sensitive. See [the data flow and security model](docs/security-and-privacy.md).
 
-This repository contains the **macOS app and the shared code required by its
-Mac features**. The iPhone app and widgets are distributed separately and are
+This repository contains the **macOS app, Windows client and related shared
+code**. The iPhone app and widgets are distributed separately and are
 not covered by this repository's MIT license. Their source is not included.
 The Mac's optional companion integration is included; using the official iCloud
 container requires the official signed Mac build. A local ad-hoc build fully
 supports Mac monitoring, but cannot use that container.
+The Windows client uses Bark for independent iPhone notifications; it does not
+pair with the original iPhone app, widgets or iCloud Keychain.
 
 ## Build from source
 

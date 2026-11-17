@@ -2,7 +2,9 @@
 
 Official releases are built on a trusted maintainer Mac. Private signing keys
 stay outside Git and GitHub Actions. CI creates a **draft** after a version tag
-passes validation; it never publishes an unsigned download as an official app.
+passes validation; it never publishes the draft automatically. The Windows
+artifact is currently unsigned and must be identified as such when the
+maintainer reviews the cross-platform release.
 
 ## Prepare
 
@@ -22,6 +24,9 @@ git tag -a "v$(cat VERSION)" -m "ServerKiln $(cat VERSION)"
 ```
 
 ## Sign and notarize
+
+The following signing steps apply to the Mac app. The independent Windows package
+is built and verified in Actions as described in the Windows section below.
 
 Install the Developer ID Application certificate and matching provisioning
 profile in the maintainer's keychain/profile store. Keep the App Store Connect
@@ -81,3 +86,30 @@ gh release edit "v$(cat VERSION)" --repo Littleor/server-kiln --draft=false --la
 Finally, verify the public release page, download both assets and compare their
 checksums. Never use an artifact built from unrelated source or private app
 targets. Do not rewrite a published tag; issue a new version for corrections.
+
+## Windows artifacts
+
+The tag workflow builds Windows using the SDK pinned in `global.json`, runs the
+core / WPF checks and packages a self-contained x64 ZIP with runtime notices and
+its SHA-256 manifest. Both Mac verification and Windows packaging must succeed
+before the draft is prepared. The Windows upload job independently verifies the
+downloaded artifact with `scripts/check-windows-package.py` before attaching:
+
+- `ServerKiln-<version>-win-x64.zip`
+- `ServerKiln-<version>-win-x64.zip.sha256`
+
+It only uploads to a draft and never clobbers existing assets. An already public
+release is left unchanged. Rerunning an upload with duplicate asset names fails
+instead of replacing a reviewed download; inspect the draft before resolving it.
+The maintainer still reviews all platform artifacts before final publication.
+
+For a local Windows build:
+
+```powershell
+scripts/build-windows.ps1 -Package -Snapshots
+python scripts/check-windows-package.py --directory dist --version (Get-Content VERSION -Raw).Trim()
+```
+
+The current Windows distribution is unsigned and updates by manual replacement.
+Do not label it as Authenticode signed. Future Windows signing should use a
+maintainer-owned credential outside the checkout; Apple signing keys are unrelated.

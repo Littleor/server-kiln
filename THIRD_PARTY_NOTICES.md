@@ -23,3 +23,12 @@ The locally modified SSH implementation and its provenance are described in
 
 macOS frameworks, the system OpenSSH client and SQLite are supplied by the
 operating system and are not redistributed here.
+
+The Windows client uses Microsoft's .NET 10 / WPF distribution; its source is MIT licensed,
+and Microsoft's binaries carry the accompanying distribution terms and notices;
+see [dotnet/runtime](https://github.com/dotnet/runtime) and
+[dotnet/wpf](https://github.com/dotnet/wpf). Self-contained Windows packages
+redistribute the Microsoft runtime and include its license and third-party
+notices alongside the application. Source builds have no external NuGet
+dependencies. Windows OpenSSH and `winsqlite3.dll` are supplied by Windows.
+The optional Bark integration uses its HTTP API and does not embed Bark code.

@@ -10,6 +10,15 @@ Install Xcode 26.3 or newer, select its developer directory, then follow the
 and `scripts/build-app.sh` before opening a pull request. XcodeGen is only needed
 for the Xcode project and official signing workflow.
 
+For the Windows client, use a .NET 10 SDK and Python 3, then follow the
+[Windows guide](docs/windows.md). Run `scripts/build-windows.ps1` for source
+builds and tests. Changes to collection or parsing should pass both desktop
+clients' shared fixture tests and the collector export check.
+The exact SDK is pinned in `global.json`. `scripts/build-windows.ps1 -Package -Snapshots`
+also validates the distributable ZIP and generates isolated synthetic screenshots.
+Review the [feature matrix](docs/windows-compatibility.md) and
+[validation record](docs/windows-validation.md) when changing platform behavior.
+
 ## Keep changes focused
 
 - Put parsing, state transitions and persistence logic in the core module.
@@ -24,8 +33,8 @@ for the Xcode project and official signing workflow.
 
 ## Public repository boundary
 
-This repository maintains the Mac app and the common modules used by its Mac
-features. Do not add the separately distributed companion app, widget targets,
+This repository maintains the Mac app, Windows client and their common protocols.
+Do not add the separately distributed companion app, widget targets,
 private planning material, assistant instructions, credentials or deployment
 records. Run `python3 scripts/check-public-tree.py --history` and
 `python3 scripts/check-docs.py`. CI also scans Git history with Gitleaks.

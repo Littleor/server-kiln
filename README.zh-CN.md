@@ -1,16 +1,18 @@
 <p align="center"><img src="docs/screenshots/app-icon.png" width="100" alt="ServerKiln 图标"></p>
 <h1 align="center">ServerKiln</h1>
-<p align="center">扫一眼 Mac 菜单栏，掌握整组 GPU 服务器的状态。</p>
+<p align="center">从 Mac 菜单栏或 Windows 托盘，掌握整组 GPU 服务器的状态。</p>
 <p align="center">
   <a href="https://github.com/Littleor/server-kiln/releases/latest"><img src="https://img.shields.io/github/v/release/Littleor/server-kiln?color=e58b4a" alt="最新版本"></a>
   <a href="https://github.com/Littleor/server-kiln/actions/workflows/ci.yml"><img src="https://github.com/Littleor/server-kiln/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT 许可证"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-black?logo=apple" alt="macOS 14 及以上">
+  <img src="https://img.shields.io/badge/Windows-11_x64-0078d4" alt="Windows 11 x64">
 </p>
 <p align="center"><a href="README.md">English</a> · <b>简体中文</b></p>
 <p align="center">
   <a href="https://github.com/Littleor/server-kiln/releases/latest">下载 Mac 版</a> ·
   <a href="docs/getting-started.md">快速开始</a> ·
+  <a href="docs/windows.md">Windows 指南</a> ·
   <a href="docs/troubleshooting.md">常见问题</a> ·
   <a href="https://serverkiln.littleor.cn/zh/">官网</a>
 </p>
@@ -19,6 +21,10 @@ ServerKiln 是一个原生 SwiftUI 菜单栏工具，通过 SSH 监控远端 Lin
 查看每张 GPU 的使用情况、训练进程与资源历史，并在服务器变空闲时收到通知。
 基础监控沿用现有 SSH 配置，无需在服务器安装常驻服务。
 
+独立的 **Windows 托盘客户端**支持服务器监控、资源历史和可选 Bark iPhone 推送。
+构建、安装与手机联动限制请参阅 [Windows 指南](docs/windows.md)。macOS 客户端继续使用原有流程。
+两端的功能范围见[平台功能对照](docs/windows-compatibility.md)。
+
 ## 界面预览
 
 <p align="center">
@@ -26,6 +32,7 @@ ServerKiln 是一个原生 SwiftUI 菜单栏工具，通过 SSH 监控远端 Lin
   <img src="docs/screenshots/zh/panel-expanded-light.png" width="350" alt="浅色单卡与任务详情">
 </p>
 <p align="center"><img src="docs/screenshots/zh/history-dark.png" width="850" alt="GPU 利用率与显存历史"></p>
+<p align="center"><img src="docs/screenshots/windows/zh/overview-light.png" width="850" alt="Windows 桌面 GPU 监控"></p>
 <p align="center"><sub>截图全部使用虚构的演示服务器和任务。</sub></p>
 
 ## 功能
@@ -62,10 +69,11 @@ NVIDIA GPU 信息依赖 `nvidia-smi`；没有 GPU 时仍可查看 CPU 和内存�
 采集结果包含进程命令和路径，分享日志前请脱敏。
 可选的 iCloud 功能会同步服务器信息与状态，详见[安全与数据流](docs/security-and-privacy.md)。
 
-本仓库仅开源 **macOS 应用及其功能所需的共用代码**。
+本仓库开源 **macOS 应用、Windows 客户端及相关共用代码**。
 iPhone App 和小组件另行分发，其源代码不在本仓库，也不受本仓库 MIT 许可证覆盖。
 Mac 侧的配套同步功能已包含在源码中；访问官方 iCloud 容器需要官方签名版本。
 自行构建的 ad-hoc 版本可完整使用 Mac 本地监控，但无法访问官方 iCloud 容器。
+Windows 版通过 Bark 提供独立的 iPhone 通知渠道，暂未接入原版 iPhone App、小组件与 iCloud 配对。
 
 ## 从源码构建
 

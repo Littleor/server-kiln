@@ -8,6 +8,11 @@ DerivedData/
 Config/Info.plist
 __pycache__/
 .venv/
+**/bin/
+**/obj/
+*.user
+*.suo
+TestResults/
 
 # Local credentials and signing material
 .env
